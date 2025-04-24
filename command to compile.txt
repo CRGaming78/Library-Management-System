@@ -1,0 +1,5 @@
+compile(cmd):
+javac -cp .;"<dir>\mysql-connector.jar;<dir>\rs2xml.jar" main.java -d out/
+
+to run(cmd):
+java -cp .;"<dir>\mysql-connector.jar;<dir>\rs2xml.jar";out main
