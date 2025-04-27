@@ -23,6 +23,7 @@ public class main {
 
     public static void login() {
         JFrame f=new JFrame("Login");
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JLabel l1,l2;  
         l1=new JLabel("Username");
         l1.setBounds(30,15, 100,30); 
@@ -35,42 +36,42 @@ public class main {
         JButton login_but=new JButton("Login");
         login_but.setBounds(130,90,80,25);
         login_but.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e){ 
+            public void actionPerformed(ActionEvent e) {
                 String username = F_user.getText();
                 String password = new String(F_pass.getPassword());
-                if(username.equals("")) {
-                    JOptionPane.showMessageDialog(null,"Please enter username");
-                } else if(password.equals("")) {
-                    JOptionPane.showMessageDialog(null,"Please enter password");
+                if (username.equals("")) {
+                    JOptionPane.showMessageDialog(null, "Please enter username");
+                } else if (password.equals("")) {
+                    JOptionPane.showMessageDialog(null, "Please enter password");
                 } else {
-                    Connection connection=connect();
-                    try{
-                        Statement stmt = connection.createStatement();
-                        stmt.executeUpdate("USE LIBRARY");
-                        String st = ("SELECT * FROM USERS WHERE USERNAME='"+username+"' AND PASSWORD='"+password+"'");
-                        ResultSet rs = stmt.executeQuery(st);
-                        if(rs.next()==false) {
-                            System.out.print("No user");  
-                            JOptionPane.showMessageDialog(null,"Wrong Username/Password!");
+                    Connection connection = connect();
+                    try {
+                        String query = "SELECT * FROM USERS WHERE USERNAME = ? AND PASSWORD = ?";
+                        PreparedStatement pstmt = connection.prepareStatement(query);
+                        pstmt.setString(1, username);
+                        pstmt.setString(2, password);
+                        
+                        ResultSet rs = pstmt.executeQuery();
+                        if (!rs.next()) {
+                            System.out.print("No user");
+                            JOptionPane.showMessageDialog(null, "Wrong Username/Password!");
                         } else {
                             f.dispose();
-                            rs.beforeFirst();
-                            while(rs.next()){
-                                String admin = rs.getString("ADMIN"); 
-                                String UID = rs.getString("UID");
-                                if(admin.equals("1")) { 
-                                admin_menu(); 
-                                } else {
-                                    user_menu(UID); 
-                                }
+                            String admin = rs.getString("ADMIN");
+                            String UID = rs.getString("UID");
+                            if ("1".equals(admin)) {
+                                admin_menu();
+                            } else {
+                                user_menu(UID);
                             }
                         }
                     } catch (Exception ex) {
                         ex.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Database error occurred!");        
                     }
                 }
-            }               
-        });
+            }
+        });        
         f.add(F_pass);
         f.add(login_but); 
         f.add(F_user);
@@ -85,7 +86,7 @@ public class main {
     public static Connection connect(){
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/mysql?user=test&password=password");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:23306/LIBRARY","test","password");
             System.out.println("Connected to MySQL");
             return con;
         } catch (Exception ex) {
@@ -147,7 +148,6 @@ public class main {
                     f.setVisible(true);
                     f.setLocationRelativeTo(null);
                 } catch (SQLException e1) {
-                    // TODO Auto-generated catch block
                      JOptionPane.showMessageDialog(null, e1);
                 }               
             }
@@ -157,7 +157,7 @@ public class main {
         my_book.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e){
                 JFrame f = new JFrame("My Books"); 
-                //f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 int UID_int = Integer.parseInt(UID); 
                 Connection connection = connect();
                 String sql="select distinct issued.*,books.bname,books.genre,books.price from issued,books " + "where ((issued.uid=" + UID_int + ") and (books.bid in (select bid from issued where issued.uid="+UID_int+"))) group by iid";
@@ -176,7 +176,6 @@ public class main {
                     f.setVisible(true);
                     f.setLocationRelativeTo(null);
                 } catch (SQLException e1) {
-                    // TODO Auto-generated catch block
                      JOptionPane.showMessageDialog(null, e1);
                 }               
             }
@@ -191,7 +190,7 @@ public class main {
     
     public static void admin_menu() {
         JFrame f=new JFrame("Admin Functions"); 
-        //f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
         JButton create_but=new JButton("Create/Reset");
         create_but.setBounds(450,60,120,25);
         create_but.addActionListener(new ActionListener() { 
@@ -221,7 +220,6 @@ public class main {
                     f.setVisible(true);
                     f.setLocationRelativeTo(null);
                 } catch (SQLException e1) {
-                    // TODO Auto-generated catch block
                     JOptionPane.showMessageDialog(null, e1);
                 }                                
             }
@@ -231,7 +229,7 @@ public class main {
         users_but.addActionListener(new ActionListener() { 
         public void actionPerformed(ActionEvent e){                 
             JFrame f = new JFrame("Users List");
-            //f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             Connection connection = connect();
             String sql="select * from users"; 
             try {
@@ -247,7 +245,6 @@ public class main {
                 f.setVisible(true);
                 f.setLocationRelativeTo(null);
             } catch (SQLException e1) {
-                // TODO Auto-generated catch block
                 JOptionPane.showMessageDialog(null, e1);
             }                         
         }
@@ -257,7 +254,7 @@ public class main {
     issued_but.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e){
             JFrame f = new JFrame("Users List");
-            //f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);                         
+            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);                         
             Connection connection = connect();
             String sql="select * from issued";
             try {
@@ -273,7 +270,6 @@ public class main {
                 f.setVisible(true);
                 f.setLocationRelativeTo(null);
             } catch (SQLException e1) {
-                // TODO Auto-generated catch block
                 JOptionPane.showMessageDialog(null, e1);
             }       
         }
@@ -283,7 +279,7 @@ public class main {
     add_user.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e){                 
             JFrame g = new JFrame("Enter User Details"); 
-            //g.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            g.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             JLabel l1,l2;  
             l1=new JLabel("Username");
             l1.setBounds(30,15, 100,30);              
@@ -317,7 +313,6 @@ public class main {
                         JOptionPane.showMessageDialog(null,"User added!");
                         g.dispose();      
                     } catch (SQLException e1) {
-                        // TODO Auto-generated catch block
                         JOptionPane.showMessageDialog(null, e1);
                     }            
                 }              
@@ -340,7 +335,7 @@ public class main {
     add_book.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e){
             JFrame g = new JFrame("Enter Book Details");
-            //g.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            g.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             JLabel l1,l2,l3;  
             l1=new JLabel("Book Name");  
             l1.setBounds(30,15, 100,30);              
@@ -370,7 +365,6 @@ public class main {
                         JOptionPane.showMessageDialog(null,"Book added!");
                         g.dispose();  
                     }catch (SQLException e1) {
-                        // TODO Auto-generated catch block
                         JOptionPane.showMessageDialog(null, e1);
                     }   
                 }     
@@ -393,7 +387,7 @@ public class main {
     issue_book.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e){
             JFrame g = new JFrame("Enter Details");
-            //g.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            g.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             JLabel l1,l2,l3,l4;  
             l1=new JLabel("Book ID(BID)");  // Label 1 for Book ID
             l1.setBounds(30,15, 100,30);              
@@ -428,7 +422,6 @@ public class main {
                         JOptionPane.showMessageDialog(null,"Book Issued!");
                         g.dispose();      
                     } catch (SQLException e1) {
-                        // TODO Auto-generated catch block
                         JOptionPane.showMessageDialog(null, e1);
                     }   
                 }
@@ -455,7 +448,7 @@ public class main {
     return_book.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e){                 
             JFrame g = new JFrame("Enter Details");
-            //g.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            g.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             JLabel l1,l2,l3,l4;  
             l1=new JLabel("Issue ID(IID)");  //Label 1 for Issue ID
             l1.setBounds(30,15, 100,30); 
@@ -501,8 +494,7 @@ public class main {
                             diff = rs1.getString(1);  
                         }
                         int diff_int = Integer.parseInt(diff);
-                        if(days_int > diff_int) { //If number of days are more than the period then calculcate fine     
-                            //System.out.println(ex.days);
+                        if(days_int > diff_int) { 
                             int fine = (ex.days-diff_int)*10; //fine for every day after the period is Rs 10.
                             stmt1.executeUpdate("UPDATE ISSUED SET FINE="+fine+" WHERE IID="+iid);  
                             String fine_str = ("Fine: Rs. "+fine);
@@ -510,7 +502,6 @@ public class main {
                         }
                         JOptionPane.showMessageDialog(null,"Book Returned!");  
                     } catch (SQLException e1) {
-                        // TODO Auto-generated catch block
                         JOptionPane.showMessageDialog(null, e1);
                     }   
                 }     
